@@ -12,6 +12,8 @@
 #include "json/rapidjson.h"
 #include "json/document.h"
 
+#include <iostream>
+
 using namespace rapidjson;
 
 RapidJsonMgr::RapidJsonMgr()
@@ -54,7 +56,7 @@ void RapidJsonMgr::writeJson()
          *    "object" :
          *    {
          *       "key" : "value"
-         *    },
+         *    }
          *  }
          */
         
@@ -98,12 +100,52 @@ void RapidJsonMgr::writeJson()
     StringBuffer buffer;
     rapidjson::Writer<StringBuffer> writer( buffer );
     document.Accept(writer);
-    string jsonResult = buffer.GetString();
-
+    _genJson = buffer.GetString();
+    
+    cout<<" _genJson= "<<_genJson<<endl;
     // Save json file
     string filePath = cocos2d::FileUtils::getInstance()->getWritablePath().append( _filename );
     FILE *fp = fopen( filePath.c_str(), "wb" );
-    fwrite( jsonResult.c_str(), 1, jsonResult.size(), fp );
+    fwrite( _genJson.c_str(), 1, _genJson.size(), fp );
     fclose( fp );
-    
 }
+
+void RapidJsonMgr::readJson()
+{
+    rapidjson::Document Reader;
+    Reader.Parse<0>( _genJson.c_str() );
+    
+    
+    if( _isRootObject )
+    {
+        if ( !Reader.IsObject() ) { return; }
+        
+        string value = Reader["key"].GetString();
+        
+        const rapidjson::Value &ArrayKey = Reader["ArrayKey"];
+        if( ArrayKey.IsArray() )
+        {
+            for (rapidjson::SizeType j = 0; j < ArrayKey.Size(); j++)
+            {
+                string ArrayValue = ArrayKey[j].GetString();
+            }
+        }
+        
+        const rapidjson::Value &object = Reader["object"];
+        if( object.IsObject() )
+        {
+            string value = object["key"].GetString();
+        }
+    }
+    else
+    {
+        if ( !Reader.IsArray() ) { return; }
+        
+        int intvalue = Reader[0].GetInt();
+        
+        const rapidjson::Value &object = Reader[ intvalue ];
+        string value = object["key"].GetString();
+    }
+}
+
+
