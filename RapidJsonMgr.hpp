@@ -25,12 +25,14 @@ private:
 private:
     bool   _isRootObject;
     string _filename;
+    string _genJson;
 public:
     //** singleton */
     static RapidJsonMgr* getInstance();
     
 public:
     void writeJson();
+    void readJson();
 
 
 };
